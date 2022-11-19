@@ -1,0 +1,212 @@
+﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="Invoices.aspx.cs" Inherits="AbbaSoft.Invoices" %>
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head runat="server">
+    <title></title>
+    <script src="Scripts/jquery-3.4.1.min.js"></script>
+    <script src="Scripts/jquery-3.4.1.js"></script>
+   <script type="text/javascript">
+
+      
+     
+       function getItemsValues() {
+           var gv = document.getElementById("GridView1");
+           var tb = gv.getElementsByTagName("select");
+           var lb = gv.getElementsByClassName("RateClass");
+           var tb1 = gv.getElementsByTagName("input");
+           var lb1 = gv.getElementsByClassName("QuantityClass");
+           var tb2 = gv.getElementsByTagName("input");
+           var lb2 = gv.getElementsByClassName("AmountClass");
+           var sub = 0;
+
+           var total = 0;
+           for (var i = 0; i < lb.length; i++) {
+               var a = lb1[i].value;
+               var b = lb[i].value;
+               var c = lb2[i].value;
+
+               if (isNaN(a)) {
+                   a = 0;
+                   b = 0;
+                   c = 0;
+               }
+               if (isNaN(b)) {
+                   a = 0;
+                   b = 0;
+                   c = 0;
+               }
+
+               sub = parseFloat(a) * parseFloat(b);
+               if (isNaN(sub)) {
+                   sub = 0;
+               }
+               console.log(i + " " + b + " " + a + "--" + c + " =" + sub)
+               lb2[i].value = sub;
+               total = total + sub;
+
+           }
+           console.log(total);
+           TextBox5.value = total;
+       }
+       
+      
+
+       $('#GridView1').click(function () {
+           getItemsValues();
+       });
+
+
+   </script>
+
+     
+</head>
+<body>
+    <form id="form1" runat="server">
+        <div>
+            <input id="calculation" type="button" value="calct" onclick="getItemsValues()" />
+            <div  runat="server">
+               
+                <asp:Label ID="Label1" runat="server"> <% = x %> </asp:Label>
+                <br />
+                <asp:Label ID="Label2" runat="server"> <% = Date1 %> </asp:Label>
+                <asp:TextBox ID="TextBox5" runat="server"></asp:TextBox>
+                <asp:DropDownList ID="DropDownList2" runat="server">
+                    <asp:ListItem>
+                        cash
+                    </asp:ListItem>
+                    <asp:ListItem>
+                        debit
+                    </asp:ListItem>
+                </asp:DropDownList>
+
+            </div>
+            <asp:Label ID="Label3" runat="server" Text="Label"></asp:Label>
+            <div>
+                <asp:SqlDataSource ID="SqlDataSourceform" runat="server" ConnectionString="<%$ ConnectionStrings:AbabConnectionString %>" SelectCommand="SELECT * FROM [Invoice]"></asp:SqlDataSource>
+
+            </div>
+            <div>
+                <asp:SqlDataSource runat="server" ID="SqlDataSourceInvoice" ConnectionString='<%$ ConnectionStrings:AbabConnectionString %>' DeleteCommand="DELETE FROM [Invoice] WHERE [id] = @id" InsertCommand="INSERT INTO [Invoice] ([id], [total], [customerName], [type], [dateInv]) VALUES (@id, @total, @customerName, @type, @dateInv)" SelectCommand="SELECT [id], [total], [customerName], [type], [dateInv] FROM [Invoice]" UpdateCommand="UPDATE [Invoice] SET [total] = @total, [customerName] = @customerName, [type] = @type, [dateInv] = @dateInv WHERE [id] = @id">
+                    <DeleteParameters>
+                        <asp:Parameter Name="id" Type="Int32"></asp:Parameter>
+                    </DeleteParameters>
+                    <InsertParameters>
+                        <asp:Parameter Name="id" Type="Int32"></asp:Parameter>
+                        <asp:Parameter Name="total" Type="Double"></asp:Parameter>
+                        <asp:Parameter Name="customerName" Type="String"></asp:Parameter>
+                        <asp:Parameter Name="type" Type="String"></asp:Parameter>
+                        <asp:Parameter Name="dateInv" Type="DateTime"></asp:Parameter>
+                    </InsertParameters>
+                    <UpdateParameters>
+                        <asp:Parameter Name="total" Type="Double"></asp:Parameter>
+                        <asp:Parameter Name="customerName" Type="String"></asp:Parameter>
+                        <asp:Parameter Name="type" Type="String"></asp:Parameter>
+                        <asp:Parameter Name="dateInv" Type="DateTime"></asp:Parameter>
+                        <asp:Parameter Name="id" Type="Int32"></asp:Parameter>
+                    </UpdateParameters>
+                </asp:SqlDataSource>
+            </div>
+            <div>
+                <asp:Button ID="Button1" runat="server" Text="Add new row" OnClick="Button1_Click" />
+            </div>
+            <asp:GridView ID="GridView1" runat="server" AutoGenerateColumns="False" AutoGenerateDeleteButton="True" AutoGenerateEditButton="True" ShowFooter="True" BackColor="White" BorderColor="#3366CC" BorderStyle="None" BorderWidth="1px" CellPadding="4" style="margin-top: 5px" OnRowDeleting="GridView1_RowDeleting">
+                <Columns>
+
+                     <asp:BoundField DataField="RowNumber" HeaderText="Row Number" />
+   <asp:TemplateField HeaderText="Product">
+
+            <ItemTemplate>
+
+             <asp:DropDownList ID="DropDownList1" runat="server"  AutoPostBack="true" DataSourceID="SqlDataSource1" DataTextField="name" DataValueField="ID" AppendDataBoundItems="true">
+    <asp:ListItem Text="All products" Value="0" />
+               </asp:DropDownList>
+
+            </ItemTemplate>
+
+        </asp:TemplateField>
+                  
+
+                     <asp:TemplateField HeaderText="Rate">
+
+            <ItemTemplate>
+
+                <asp:DropDownList CssClass="RateClass" ID="TextBox2" runat="server" DataSourceID="SqlDataSource2" DataTextField="price" DataValueField="price">
+                     <asp:ListItem Text="price" Value="0" />
+                </asp:DropDownList>
+
+                <asp:SqlDataSource runat="server" ID="SqlDataSource2" ConnectionString='<%$ ConnectionStrings:AbabConnectionString %>' SelectCommand="SELECT [ID], [price] FROM [products] WHERE ([ID] = @ID)">
+                    <SelectParameters>
+                        <asp:ControlParameter ControlID="DropDownList1" PropertyName="SelectedValue" Name="ID" Type="Int32"></asp:ControlParameter>
+                    </SelectParameters>
+                </asp:SqlDataSource>
+            </ItemTemplate>
+
+        </asp:TemplateField>
+                        <asp:TemplateField HeaderText="Qty">
+
+            <ItemTemplate>
+
+                <asp:TextBox CssClass="QuantityClass" ID="TextBox3" runat="server" Text="0">0</asp:TextBox>
+
+            </ItemTemplate>
+
+        </asp:TemplateField>
+
+                        <asp:TemplateField HeaderText="Amount">
+                           
+
+            <ItemTemplate>
+
+                <asp:TextBox ID="TextBox4" CssClass="AmountClass" runat="server" >0.00</asp:TextBox>
+
+            </ItemTemplate>
+
+        </asp:TemplateField>
+
+       
+                    <asp:TemplateField HeaderText="Invoice order">
+
+            <ItemTemplate>
+
+                <asp:TextBox ID="TextBox1" runat="server" ReadOnly="true" >
+                </asp:TextBox>
+
+            </ItemTemplate>
+
+        </asp:TemplateField>
+
+
+                    <asp:ButtonField ButtonType="Button" CommandName="Update" HeaderText="culc" ShowHeader="True" Text="Button" />
+
+
+                </Columns>
+
+                <FooterStyle BackColor="#99CCCC" ForeColor="#003399" />
+                <HeaderStyle BackColor="#003399" Font-Bold="True" ForeColor="#CCCCFF" />
+                <PagerStyle BackColor="#99CCCC" ForeColor="#003399" HorizontalAlign="Left" />
+                <RowStyle BackColor="White" ForeColor="#003399" />
+                <SelectedRowStyle BackColor="#009999" Font-Bold="True" ForeColor="#CCFF99" />
+                <SortedAscendingCellStyle BackColor="#EDF6F6" />
+                <SortedAscendingHeaderStyle BackColor="#0D4AC4" />
+                <SortedDescendingCellStyle BackColor="#D6DFDF" />
+                <SortedDescendingHeaderStyle BackColor="#002876" />
+
+            </asp:GridView>
+             <br />
+             <asp:Button ID="Button2"  runat="server" Text="SAVE Invoice" OnClick="Button2_Click" />
+            <div>
+               
+            </div>
+        </div>
+    </form>
+    <asp:SqlDataSource ID="SqlDataSource1" runat="server" ConnectionString='<%$ ConnectionStrings:AbabConnectionString %>' SelectCommand="SELECT [ID], [name] FROM [products]"></asp:SqlDataSource>
+   
+  
+</body>
+    <script runat="server">
+
+    </script>
+</html>
+
